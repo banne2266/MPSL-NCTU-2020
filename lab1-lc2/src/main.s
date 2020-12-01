@@ -1,0 +1,46 @@
+.data
+	arr1: .word 0x19, 0x34, 0x14, 0x32, 0x52, 0x23, 0x61, 0x29
+	arr2: .word 0x18, 0x17, 0x33, 0x16, 0xFA, 0x20, 0x55, 0xAC
+
+.text
+	.global main
+	.equ SIZE, 8
+
+do_sort:
+	movs R1, #0//index i of loop1
+loop1:
+	movs R2, #0//index j of loop2
+loop2:
+	lsl R4, R2, #2
+	add R4, R0, R4//R4 = arr+j
+	add R5, R4, #4//R5 = arr+j+1
+	ldr R6, [R4]//R6 = arr[j]
+	ldr R7, [R5]//R7 = arr[j+1]
+	cmp R6, R7
+	bge end_if
+
+	movs R3, R6//if(arr[j]<arr[j+1]) swap
+	movs R6, R7
+	movs R7, R3
+
+	str R6, [R4]
+	str R7, [R5]
+
+end_if:
+	add R2, #1//j++
+	add R3, R1, R2//i+j
+	cmp R3, #SIZE-1//i+j<SIZE-1
+	blt loop2//end of loop2
+
+	add R1, #1//i++
+	cmp R1, #SIZE//i<SIZE
+	blt loop1//end of loop1
+
+	bx lr
+
+main:
+	ldr R0, =arr1
+	bl do_sort
+	ldr R0, =arr2
+	bl do_sort
+L: b L

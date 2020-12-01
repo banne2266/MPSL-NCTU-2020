@@ -1,0 +1,101 @@
+	.syntax unified
+	.cpu cortex-m4
+	.thumb
+.data
+	result: .word 0
+	max_size: .word 0
+
+.text
+	m: .word 0x5E
+	n: .word 0x60
+
+/*
+{R0,R1}->ARGV(A,B)->CALLER
+R2->RETURN VALUE
+R3~R6->TEMP REGISTER
+R7->GLOBAL VARIABLE(SP)
+R6->GLOBAL VARIABLE MAX_SIZE
+LR->CALLEE
+*/
+GCD:
+	PUSH {LR}
+
+	MRS R6, MSP
+	SUBS R6, R7, R6
+	CMP R5, R6
+	BGT L0
+	MOVS R5, R6
+L0:
+	CMP R0, #0
+	BNE L1
+	MOV R2, R1
+	B GCD_RETURN
+L1:
+	CMP R1, #0
+	BNE L2
+	MOV R2, R0
+	B GCD_RETURN
+L2:
+	AND R3, R0, #1//R3=A%2
+	AND R4, R1, #1//R4=b%2
+	ORR R3, R3, R4
+	CMP R3, #0
+	BNE L3
+	PUSH {R0,R1}
+	LSR R0, R0, #1
+	LSR R1, R1, #1
+	BL GCD
+	POP {R0,R1}
+	LSL R2, R2, #1
+	B GCD_RETURN
+L3:
+	AND R3, R0, #1
+	CMP R3, 0
+	BNE L4
+	PUSH {R0,R1}
+	LSR R0, R0, #1
+	BL GCD
+	POP {R0,R1}
+	B GCD_RETURN
+L4:
+	AND R3, R1, #1
+	CMP R3, 0
+	BNE L5
+	PUSH {R0,R1}
+	LSR R1, R1, #1
+	BL GCD
+	POP {R0,R1}
+	B GCD_RETURN
+L5:
+	PUSH {R0,R1}
+	MOV R3, R0//R3=A
+	MOV R4, R1//R4=B
+	CMP R3, R4
+	BGE L51//IF(A<B)
+	SUB R0, R4, R3
+	MOV R1, R3
+	B L52
+L51://IF(A>B)
+	SUB R0, R3, R4
+	MOV R1, R4
+L52:
+	BL GCD
+	POP {R0,R1}
+GCD_RETURN:
+	POP {LR}
+	BX LR
+
+.global main
+main:
+	LDR R2, =m
+	LDR R3, =n
+	LDR R0, [R2]
+	LDR R1, [R3]
+	MRS R7, MSP
+	MOVS R5, #0
+	BL GCD
+	LDR R4, =result
+	STR R2, [R4]
+	LDR R5, =max_size
+	STR R6, [R5]
+L:	B L
