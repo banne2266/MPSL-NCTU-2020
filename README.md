@@ -1,4 +1,4 @@
-# NCTU-MSPL-2020
+# MPSL-NCTU-2020
 
 ###### Course Name: Microprocessor System Lab. by Prof. 曹孝櫟
 |:warning: **Do not plagiarize my work or you will be graded ZERO !**|
